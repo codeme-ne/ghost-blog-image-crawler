@@ -1,0 +1,27 @@
+# Environment variables
+.env
+
+# Downloaded images
+images/
+
+# Crawl cache
+crawl_cache.json
+
+# Logs
+*.log
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
