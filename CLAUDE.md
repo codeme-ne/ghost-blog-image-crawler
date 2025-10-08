@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Purpose
 
-Utility script to crawl and download all images and videos from www.produktiv.me (a Ghost blog) before canceling Ghost.org Pro hosting. Prepares for self-hosting migration by organizing media by article slug.
+Utility script to crawl and download all images and videos from Ghost blogs before migrating from Ghost(Pro) to self-hosting. Organizes media by article slug for seamless migration to any platform.
 
 ## Commands
 

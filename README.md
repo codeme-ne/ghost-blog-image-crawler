@@ -1,158 +1,234 @@
 # Ghost Blog Media Crawler
 
-Dieses Script crawlt alle **Bilder und Videos** von www.produktiv.me mit der Firecrawl API und speichert sie **sortiert nach Artikel-Slug** für einfache Migration.
+![Python Version](https://img.shields.io/badge/python-3.8+-blue.svg)
+![License](https://img.shields.io/badge/license-MIT-green.svg)
+![Contributions Welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg)
 
-## 🎯 Ziel
+A utility to crawl and download all images and videos from Ghost blogs, organized by article slug for easy migration to self-hosted platforms.
 
-Alle Medien (Bilder + Videos) vor der Ghost.org Pro Kündigung herunterladen und **nach Artikel organisieren** für Self-Hosting Migration.
+## 🎯 Why Use This?
 
-## 📋 Voraussetzungen
+**Problem:** You're migrating your Ghost blog from Ghost(Pro) to self-hosting and need to download all media files (images, videos) before canceling your subscription.
 
-- Python 3.8+
-- Firecrawl API Key (von [firecrawl.dev](https://firecrawl.dev))
+**Solution:** This tool uses the Firecrawl API to efficiently crawl your Ghost blog and downloads all media files organized by article slug, making migration seamless.
 
-## 🚀 Setup
+## ✨ Key Features
 
-### 1. Dependencies installieren
+- ✅ **Dual Mode Operation**: Sitemap-based (precise) or crawl-based (exploratory)
+- ✅ **Parallel Processing**: 10 concurrent downloads for speed
+- ✅ **Slug-Based Organization**: Media sorted by article for easy migration
+- ✅ **Resume Capability**: Skips already downloaded files
+- ✅ **Video Support**: Automatically detects and downloads `.mp4`, `.webm`, `.mov` videos
+- ✅ **Thumbnail Extraction**: Video thumbnails extracted from HTML attributes
+- ✅ **Robust Error Handling**: Individual failures don't stop the process
+- ✅ **Streaming Downloads**: Memory-efficient for large video files
+- ✅ **Cache Support**: Save crawl results to avoid re-crawling on interruption
+
+## 📋 Prerequisites
+
+- Python 3.8 or higher
+- Firecrawl API Key (get one at [firecrawl.dev](https://firecrawl.dev))
+
+## 🚀 Installation
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/codeme-ne/ghost-blog-image-crawler.git
+cd ghost-blog-image-crawler
+```
+
+### 2. Install dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### 2. API Key konfigurieren
+### 3. Configure API key
 
-Erstelle eine `.env` Datei im Projektordner:
-
-```bash
-FIRECRAWL_API_KEY=fc-dein-api-key-hier
-```
-
-**WICHTIG:** Die `.env` Datei ist in `.gitignore` und wird NICHT committed!
-
-## 💻 Usage
-
-### Dry-Run Test (empfohlen zuerst!)
-
-Zeigt nur gefundene Bild-URLs an, lädt nichts herunter:
+Create a `.env` file in the project root:
 
 ```bash
-python crawl_images.py --limit 10 --dry-run
+FIRECRAWL_API_KEY=fc-your-api-key-here
 ```
 
-### Test-Download (10 Seiten)
+**IMPORTANT:** The `.env` file is gitignored and will NOT be committed!
 
-Crawlt 10 Seiten und lädt gefundene Bilder herunter:
+## 💻 Quick Start
+
+### Recommended: Sitemap Mode (Precise)
+
+Sitemap mode is more efficient and avoids unwanted pages like tag listings:
 
 ```bash
-python crawl_images.py --limit 10
+python crawl_images.py \
+  --sitemap https://your-ghost-blog.com/sitemap-posts.xml \
+  --sitemap https://your-ghost-blog.com/sitemap-pages.xml
 ```
 
-### Production (alle Bilder)
+### Alternative: Crawl Mode (Exploratory)
 
-Crawlt die komplette Website:
+Follows links from the homepage (may hit unwanted pages):
 
 ```bash
-python crawl_images.py --limit 1000
+python crawl_images.py --url https://your-ghost-blog.com --limit 100
 ```
 
-### Alle Optionen
+## 📖 Usage Examples
+
+### Dry Run (Recommended First Step)
+
+Show found URLs without downloading:
+
+```bash
+python crawl_images.py \
+  --sitemap https://your-ghost-blog.com/sitemap-posts.xml \
+  --dry-run
+```
+
+### Small Test Batch
+
+Test with a few pages first:
+
+```bash
+python crawl_images.py \
+  --url https://your-ghost-blog.com \
+  --limit 10
+```
+
+### Production with Cache
+
+Save crawl results to protect against crashes:
+
+```bash
+./run.sh \
+  --sitemap https://your-ghost-blog.com/sitemap-posts.xml \
+  --sitemap https://your-ghost-blog.com/sitemap-pages.xml \
+  --save-cache
+```
+
+### Resume from Cache
+
+If interrupted, resume without re-crawling:
+
+```bash
+python crawl_images.py --use-cache
+```
+
+### All Available Options
 
 ```bash
 python crawl_images.py --help
 
 Options:
-  --url URL             Blog URL (default: https://www.produktiv.me)
-  --limit N             Max Seiten zu crawlen (default: 100)
-  --dry-run             Nur URLs anzeigen, nicht downloaden
-  --output-dir PATH     Output-Verzeichnis (default: ./images)
+  --url URL                  Blog URL to crawl (default: https://example.com)
+  --sitemap URL              Sitemap XML URL (can be used multiple times)
+  --limit N                  Max pages to crawl in crawl mode (default: 100)
+  --dry-run                  Show URLs only, don't download
+  --output-dir PATH          Output directory (default: ./images)
+  --cache-file PATH          Cache file path (default: ./crawl_cache.json)
+  --save-cache               Save crawl results to cache
+  --use-cache                Load from cache instead of crawling
 ```
 
-## 📁 Output-Struktur
+## 📁 Output Structure
 
-Medien werden **nach Artikel-Slug** organisiert für einfache Migration:
+Media files are organized by article slug for easy migration:
 
 ```
 images/
-├── artikel-slug-1/
+├── first-blog-post/
 │   ├── header-image.jpg
 │   ├── content-image-1.png
-│   └── video.mp4              # 🎬 Videos werden auch heruntergeladen!
-├── rezensionen/
-│   ├── testimonial.jpg
-│   ├── demo-video.mp4         # 🎬 Videos
-│   └── demo-video_thumb.jpg   # 📸 Automatisch extrahierte Thumbnails
+│   └── demo-video.mp4
+├── getting-started/
+│   ├── screenshot.png
+│   └── tutorial-video.mp4
 ├── _homepage/
 │   └── logo.png
 └── _shared/
-    └── shared-media.png       # Medien die auf mehreren Seiten erscheinen
+    └── icon.png              # Media appearing on multiple pages
 ```
 
-**Vorteile:**
+**Benefits:**
 
-- ✅ Einfache Zuordnung: Jeder Ordner = ein Artikel
-- ✅ Direkte Migration: Medien können direkt in den entsprechenden Artikel eingefügt werden
-- ✅ Übersichtlich: Keine Datums-basierte Suche mehr nötig
-- ✅ Automatische Erkennung von geteilten Medien (z.B. Logos, Icons)
-- ✅ **Videos werden mitgeladen**: Alle `.mp4`, `.webm`, `.mov` Videos werden heruntergeladen
-- ✅ **Thumbnails extrahiert**: Video-Thumbnails aus `style` Attributen werden automatisch gespeichert
+- Each folder = one article
+- Direct migration to new platform
+- No date-based searching needed
+- Automatic detection of shared media (logos, icons)
+- Videos and thumbnails automatically included
 
-## ✨ Features
+## 🔧 Configuration
 
-- ✅ **Parallele Downloads** - 10 gleichzeitige Downloads für Geschwindigkeit
-- ✅ **Resume-Fähigkeit** - Überspringt bereits heruntergeladene Medien
-- ✅ **Robustes Error Handling** - Einzelne Fehler stoppen nicht den Prozess
-- ✅ **Streaming Downloads** - Speichereffizient auch für große Videos
-- ✅ **Video Support** - Automatische Erkennung von `.mp4`, `.webm`, `.mov` Videos
-- ✅ **Thumbnail Extraktion** - Video-Thumbnails werden aus HTML `style` Attributen extrahiert
-- ✅ **Logging** - Detaillierte Logs über erfolgreiche/fehlgeschlagene Downloads
-- ✅ **Slug-basiert** - Medien nach Artikel organisiert statt nach Datum
+### Environment Variables
 
-## 🧪 Empfohlener Test-Ablauf
+Create a `.env` file (use `.env.example` as template):
 
-1. **Dry-Run** - URLs validieren:
-   ```bash
-   python crawl_images.py --limit 10 --dry-run
-   ```
-
-2. **Test-Download** - 10 Bilder testen:
-   ```bash
-   python crawl_images.py --limit 10
-   ```
-
-3. **Validierung** - Prüfe `images/` Ordner
-
-4. **Production** - Alle Bilder:
-   ```bash
-   python crawl_images.py --limit 1000
-   ```
-
-## 🛠️ Technische Details
-
-- **Firecrawl API v2** mit HTML-Format für Bild-Extraktion
-- **BeautifulSoup4** für robustes HTML-Parsing
-- **ThreadPoolExecutor** für parallele Downloads
-- **Streaming Downloads** mit `requests` Library
-- **OpenBSD-Style** - Minimalistisch, unter 20 Zeilen pro Funktion
-
-## 📝 Logs
-
-Logs werden in der Console ausgegeben:
-
-```
-2025-10-08 10:30:15 - INFO - Starting crawl of https://www.produktiv.me with limit=10
-2025-10-08 10:30:45 - INFO - Crawl completed. Found 10 pages
-2025-10-08 10:30:46 - INFO - Extracted 23 unique image URLs
-2025-10-08 10:30:46 - INFO - Starting download of 23 images to ./images
-2025-10-08 10:30:47 - INFO - Downloaded: image-6.png
-...
+```bash
+FIRECRAWL_API_KEY=fc-your-api-key-here
 ```
 
-## 🔒 Sicherheit
+### CLI Flags
 
-- API Keys werden in `.env` gespeichert (nicht in Git)
-- User-Agent Header verhindert Bot-Blockierung
-- Timeout verhindert hängende Requests
+- `--sitemap`: (Recommended) Precise URL list from sitemap XML
+- `--url`: Base URL for crawl mode
+- `--limit`: Max pages in crawl mode (ignored in sitemap mode)
+- `--dry-run`: Preview mode
+- `--save-cache`: Protect against crashes during long runs
+- `--use-cache`: Resume from previous run
 
-## 📄 Lizenz
+## 🐛 Troubleshooting
 
-Utility-Script für persönlichen Gebrauch.
+### "Invalid API key" error
+
+- Check your `.env` file exists and contains valid key
+- Verify key starts with `fc-`
+- Get a new key at [firecrawl.dev](https://firecrawl.dev)
+
+### "Rate limited" error
+
+- You've hit Firecrawl's rate limit
+- Wait a few minutes and try again
+- Use `--save-cache` to avoid re-crawling
+
+### Downloads are slow
+
+- Increase `MAX_WORKERS` in `crawl_images.py` (default: 10)
+- Check your internet connection
+- Large videos take time to stream
+
+### Missing media files
+
+- Check the crawl output for errors
+- Some media may be loaded via JavaScript (not captured)
+- Verify URLs in dry-run mode first
+
+## 🤝 Contributing
+
+Contributions are welcome! Please:
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## 📝 Code Style
+
+- OpenBSD-style: Minimal, clear, secure
+- Max 20 lines per function
+- No type hints (simple utility)
+- Error handling with context
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- Powered by [Firecrawl API](https://firecrawl.dev)
+- Built for the Ghost blogging community
+
+---
+
+**Need help?** Open an issue on GitHub or check the [troubleshooting section](#-troubleshooting).

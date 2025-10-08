@@ -25,3 +25,9 @@ venv/
 .idea/
 *.swp
 *.swo
+
+# Project-specific docs (not for public repo)
+docs/IMPLEMENTATION_PLAN_GHOST_API.md
+
+# Serena project files
+.serena/
